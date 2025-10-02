@@ -71,3 +71,29 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Deployment Troubleshooting (GitHub Pages)
+
+If you deploy this site to GitHub Pages and see missing assets (404) or runtime errors, try the following checklist:
+
+- Ensure `vite.config.ts` has `base` set to `/hook-todo-charm/` when publishing to https://<user>.github.io/hook-todo-charm/
+- Verify the build locally:
+
+	```bash
+	npm ci
+	npm run build
+	ls -la dist
+	```
+
+- Confirm `dist/` contains `index.html`, `assets/` CSS/JS, and `favicon.ico`.
+- In the repo Settings → Pages, set Source to "GitHub Actions" (if you use the provided workflow).
+- Use the official GitHub Pages Actions flow (already configured in `.github/workflows/deploy.yml`):
+	- `actions/configure-pages@v4`
+	- `actions/upload-pages-artifact@v3`
+	- `actions/deploy-pages@v4`
+
+- If you see a 403 when pushing, check organization/repo Actions restrictions or use a PAT as a fallback (create a secret `PUBLISH_TOKEN` with repo write permissions).
+
+- If you see `Cannot read properties of null (reading 'addEventListener')`, ensure event listeners are attached only after elements exist (use `if (el) el.addEventListener(...)` or `DOMContentLoaded`). Prefer React handlers when using React components.
+
+If you'd like, I can run the local build and inspect the `dist/` contents for you, or add a PAT fallback to the workflow.
