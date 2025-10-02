@@ -4,38 +4,46 @@ on:
   push:
     branches: [ main ]
 
-# Grant the workflow the minimum permissions required for Pages deployment.
-# `contents: write` lets the action push the `gh-pages` branch. `pages: write` is
-# required to manage GitHub Pages site. See: https://docs.github.com/actions/using-workflow-permissions-for-github-tokens
+# Use the official GitHub Actions for Pages. This avoids third-party token/push issues.
 permissions:
-  contents: write
+  contents: read
   pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # Ensure the runner has a token capable of pushing created commits
-          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build
-        run: npm run build --if-present
+        run: npm run build
+
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+        if: github.ref == 'refs/heads/main'
+        id: deployment
+        uses: actions/deploy-pages@v4
