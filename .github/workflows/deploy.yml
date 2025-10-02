@@ -4,6 +4,13 @@ on:
   push:
     branches: [ main ]
 
+# Grant the workflow the minimum permissions required for Pages deployment.
+# `contents: write` lets the action push the `gh-pages` branch. `pages: write` is
+# required to manage GitHub Pages site. See: https://docs.github.com/actions/using-workflow-permissions-for-github-tokens
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -11,6 +18,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Ensure the runner has a token capable of pushing created commits
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
